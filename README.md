@@ -2,7 +2,7 @@
 
 This HEX file parser function analyses on a per byte basis each record. State machine based.
 
-The fields of Intel HEX records included: <br />
+The fields of Intel HEX records includes: <br />
 ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `Start code`
 ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `Byte count`
 ![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `Address`
