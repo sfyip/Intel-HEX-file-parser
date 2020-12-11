@@ -39,6 +39,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 #define CHECKSUM_1_STATE        11
 
 #define INVALID_HEX_CHAR        'x'
+#define IHEX_DATA_SIZE          32
 
 static uint8_t HexToDec(uint8_t h)
 {
@@ -56,13 +57,13 @@ static uint8_t state;
 static uint8_t byte_count;
 static uint32_t address;
 static uint8_t record_type;
-static uint8_t data[32];
+static uint8_t data[IHEX_DATA_SIZE];
 static uint8_t data_size_in_nibble;
 static uint8_t checksum;
 
 static uint8_t temp_cs;         // save checksum high byte
 static uint8_t calc_cs;         // calculate checksum
-static bool calc_cs_toogle = 0;
+static bool calc_cs_toogle = false;
 
 #if (CONFIG_IHEX_HOOK > 0u)
 static void ihex_hook()
@@ -70,7 +71,6 @@ static void ihex_hook()
     switch (record_type)
     {
     case 0:         //DATA
-    {
         printf("WriteData (0x%08X):", address);
 
         uint8_t i;
@@ -81,36 +81,27 @@ static void ihex_hook()
         }
         printf("\n");
         break;
-    }
 
     case 1:         //EOF
-    {
         printf("EOF\n");
         break;
-    }
 
     case 4:         //Set linear address
-    {
         printf("Set Linear Address:%08X\n", address);
         break;
-    }
 
     case 5:         // Start linear address
-    {
         printf("Start linear address\n");
         break;
-    }
 
     default:
-    {
         break;
-    }
     }
 }
 #endif
 
 
-void WriteFlashData(uint32_t address, const uint8_t *flashRawData, uint32_t size)
+void write_flash_data(uint32_t address, const uint8_t *flashRawData, uint32_t size)
 {
     //
 }
@@ -118,10 +109,11 @@ void WriteFlashData(uint32_t address, const uint8_t *flashRawData, uint32_t size
 bool ihex_parser(const uint8_t *steambuf, uint32_t size)
 {
     uint32_t i;
+    uint8_t c, hc;
+    
     for (i = 0; i<size; i++)
     {
-        uint8_t c = steambuf[i];
-        uint8_t hc;
+        c = steambuf[i];
 
         if (c == '\0')
         {
@@ -154,7 +146,6 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
         switch (state)
         {
         case START_CODE_STATE:
-        {
             if (c == '\r' || c == '\n')
             {
                 continue;
@@ -174,42 +165,37 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
                 return false;
             }
             break;
-        }
 
         case BYTE_COUNT_0_STATE:
         case BYTE_COUNT_1_STATE:
-        {
             byte_count = (byte_count << 4) | hc;
             ++state;
             break;
-        }
 
         case ADDR_0_STATE:
         case ADDR_1_STATE:
         case ADDR_2_STATE:
         case ADDR_3_STATE:
-        {
             uint32_t address_hi = address & 0xFFFF0000;
             address = ((address << 4) | hc) & 0x0000FFFF;   // only alter lower 16-bit address
             address = address_hi | address;
             ++state;
             break;
-        }
 
         case RECORD_TYPE_0_STATE:
-        {
             if (hc != 0)
+            {
                 return false;
-
+            }
             ++state;
             break;
-        }
 
         case RECORD_TYPE_1_STATE:
-        {
             if (!(hc >= 0 && hc <= 5))
+            {
                 return false;
-
+            }
+            
             record_type = hc;
 
             if (byte_count == 0)
@@ -226,10 +212,8 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
             }
 
             break;
-        }
 
         case DATA_STATE:
-        {
             uint8_t b_index = data_size_in_nibble >> 1;
             data[b_index] = (data[b_index] << 4) | hc;
 
@@ -239,16 +223,12 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
                 ++state;
             }
             break;
-        }
 
         case CHECKSUM_0_STATE:
-        {
             ++state;
             break;
-        }
 
         case CHECKSUM_1_STATE:
-        {
             if (calc_cs != 0x00)
             {
                 return false;
@@ -256,12 +236,12 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
 
             if (record_type == 0)
             {
-                WriteFlashData(address, data, data_size_in_nibble>>1);
+                write_flash_data(address, data, data_size_in_nibble>>1);
             }
             else if (record_type == 4)
             {
-                uint32_t temp = ((uint32_t)data[0] << 24) | ((uint32_t)data[1] << 16);
-                address = temp & 0xFFFF0000;
+                uint32_t hiword = ((uint32_t)data[0] << 24) | ((uint32_t)data[1] << 16);
+                address = hiword & 0xFFFF0000;
             }
 
 #if (CONFIG_IHEX_HOOK > 0u)
@@ -270,12 +250,9 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
 
             state = START_CODE_STATE;
             break;
-        }
 
         default:
-        {
             return false;
-        }
         }
     }
     return true;
