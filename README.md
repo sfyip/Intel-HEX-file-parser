@@ -13,7 +13,7 @@ The fields of Intel HEX records includes: <br />
 For example:<br/>
 If the input string is <b>":020000040800F2:10"</b><br/>
 The parser will iterate through the string, the last character will be recognized as "Byte count last nibble" field.
-Then, the parser will save current recognized state and return back to the caller function.
+Then, the parser will save current state and return back to the caller function.
 
 If the 2nd input string is <b>"8000000804002001810008C582000871810008"</b>
 The parser will parse the string based on previous saved state. Hence, the first character will be recognized as "Address" field.
