@@ -1,0 +1,1 @@
+gcc -o ihex_parser -O3 ihex_parser.c main.c
