@@ -100,6 +100,15 @@ int main()
     {
         printf("Parse error\n");
     }
+    
+    printf("------------------------------------------\n");
+
+    const uint8_t ihex_ex_seg[] = "\n:020000021200EA\n:10246200464C5549442050524F46494C4500464C33\n:1000100018F09FE5805F20B9F0FF1FE518F09FE51D\n:00000001FF";
+    if (!ihex_parser(ihex_ex_seg, sizeof(ihex_ex_seg)))
+    {
+        printf("Parse error\n");
+    }
+    
     printf("Done");
 
     //getchar();

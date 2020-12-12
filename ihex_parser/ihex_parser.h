@@ -23,7 +23,6 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 
 #define CONFIG_IHEX_DEBUG_OUTPUT        1u          // Output parse status
 
-
 typedef bool(*ihex_callback_fp)(uint32_t addr, const uint8_t *buf, uint8_t bufsize);
 
 bool ihex_parser(const uint8_t *steambuf, uint32_t size);

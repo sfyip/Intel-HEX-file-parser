@@ -56,7 +56,9 @@ static uint8_t HexToDec(uint8_t h)
 
 static uint8_t state;
 static uint8_t byte_count;
-static uint32_t address;
+static uint16_t address_lo;
+static uint16_t address_hi;
+static bool ex_segment_addr_mode = false;
 static uint8_t record_type;
 static uint8_t data[IHEX_DATA_SIZE];
 static uint8_t data_size_in_nibble;
@@ -67,12 +69,18 @@ static bool calc_cs_toogle = false;
 
 static ihex_callback_fp callback_fp = 0;
 
+#define TRANSFORM_ADDR(addr_hi, addr_lo)       (ex_segment_addr_mode) ?                                  \
+                                                ( (((uint32_t)(addr_hi)) << 4) + ((uint32_t)(addr_lo)) ): \
+                                                ( (((uint32_t)(addr_hi)) << 16) | ((uint32_t)(addr_lo)) )
+
 #if (CONFIG_IHEX_DEBUG_OUTPUT > 0u)
 static void ihex_debug_output()
 {
     switch (record_type)
     {
     case 0:         //DATA
+    {
+        uint32_t address = TRANSFORM_ADDR(address_hi, address_lo);
         printf("WriteData (0x%08X):", address);
 
         uint8_t i;
@@ -83,13 +91,18 @@ static void ihex_debug_output()
         }
         printf("\n");
         break;
+    }
 
     case 1:         //EOF
         printf("EOF\n");
         break;
 
+    case 2:         //Set extended segment address
+        printf("Set Extended Segment Address:%08X\n", TRANSFORM_ADDR(address_hi, 0x0000));
+        break;
+
     case 4:         //Set linear address
-        printf("Set Linear Address:%08X\n", address);
+        printf("Set Linear Address:%08X\n", TRANSFORM_ADDR(address_hi, 0x0000));
         break;
 
     case 5:         // Start linear address
@@ -155,7 +168,7 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
             {
                 byte_count = 0;
                 record_type = 0;
-                address &= 0xFFFF0000;
+                address_lo = 0x0000;
                 memset(data, 0, sizeof(data));
                 data_size_in_nibble = 0;
                 ++state;
@@ -177,9 +190,7 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
         case ADDR_2_STATE:
         case ADDR_3_STATE:
         {
-            uint32_t address_hi = address & 0xFFFF0000;
-            address = ((address << 4) | hc) & 0x0000FFFF;   // only alter lower 16-bit address
-            address = address_hi | address;
+            address_lo = ((address_lo << 4) | hc);   // only alter lower 16-bit address
             ++state;
             break;
         }
@@ -238,22 +249,30 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
                 return false;
             }
 
+            if (record_type == 2)           // Set extended segment addresss
+            {
+                address_hi = ((uint16_t)data[0] << 8) | (data[1]);
+                ex_segment_addr_mode = true;
+            }
+            else if (record_type == 4)      // Set linear addresss
+            {
+                address_hi = ((uint16_t)data[0] << 8) | (data[1]);
+                ex_segment_addr_mode = false;
+            }
+
 #if (CONFIG_IHEX_DEBUG_OUTPUT > 0u)
             ihex_debug_output();
 #endif
 
             if (record_type == 0 && callback_fp != 0)
             {
+                uint32_t address = TRANSFORM_ADDR(address_hi, address_lo);
                 if(!callback_fp(address, data, data_size_in_nibble>>1))
                 {
                     return false;
                 }
             }
-            else if (record_type == 4)      // Set linear addresss
-            {
-                uint32_t hiword = ((uint32_t)data[0] << 24) | ((uint32_t)data[1] << 16);
-                address = hiword & 0xFFFF0000;
-            }
+
 
             state = START_CODE_STATE;
             break;
