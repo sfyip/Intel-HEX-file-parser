@@ -76,7 +76,7 @@ WriteData (0x08008470):A683000800A24A04 <br/>
 Start linear address <br/>
 EOF
 
-### Example Code -use fread() to read and parse the ihex file:
+### Example Code - use fread() to read and parse the ihex file:
 ```C
     ihex_set_callback_func(write_flash_data);
     ihex_reset_state();
