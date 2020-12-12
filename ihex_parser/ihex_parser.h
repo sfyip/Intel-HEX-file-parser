@@ -25,6 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 
 typedef bool(*ihex_callback_fp)(uint32_t addr, const uint8_t *buf, uint8_t bufsize);
 
+void ihex_reset_state(void);                        // reset state machines, callback function is kept
 bool ihex_parser(const uint8_t *steambuf, uint32_t size);
 void ihex_set_callback_func(ihex_callback_fp fp);   // Callback function will be triggered at the end of recordtype 'Data'
 

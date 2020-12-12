@@ -16,6 +16,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 **************************************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h> 
 #include "ihex_parser.h"
 
 bool write_flash_data(uint32_t addr, const uint8_t *buf, uint8_t bufsize)
@@ -32,42 +33,50 @@ bool write_flash_data(uint32_t addr, const uint8_t *buf, uint8_t bufsize)
     return true;
 }
 
-
-int main()
+bool testcase_parse_indv_record_type()
 {
-    ihex_set_callback_func(write_flash_data);
+    printf("=== testcase_parse_indv_record_type\n");
 
     const uint8_t ihex_d0[] = ":108000000804002001810008C58200087181000871";
     if (!ihex_parser(ihex_d0, sizeof(ihex_d0)))
     {
-        printf("Parse error\n");
+        printf("Parse error d0\n");
+        return false;
     }
 
     const uint8_t ihex_d1[] = ":08847000A683000800A24A04E3";
     if (!ihex_parser(ihex_d1, sizeof(ihex_d1)))
     {
-        printf("Parse error\n");
+        printf("Parse error d1\n");
+        return false;
     }
 
     const uint8_t ihex_a[] = ":020000040800F2";
     if (!ihex_parser(ihex_a, sizeof(ihex_a)))
     {
-        printf("Parse error\n");
+        printf("Parse error d2\n");
+        return false;
     }
 
     const uint8_t ihex_l1[] = ":04000005080080ED82";
     if (!ihex_parser(ihex_l1, sizeof(ihex_l1)))
     {
-        printf("Parse error\n");
+        printf("Parse error d3\n");
+        return false;
     }
 
     const uint8_t ihex_eof[] = ":00000001FF";
     if (!ihex_parser(ihex_eof, sizeof(ihex_eof)))
     {
-        printf("Parse error\n");
+        printf("Parse error d4\n");
+        return false;
     }
+    return true;
+}
 
-    printf("------------------------------------------\n");
+bool testcase_long_str()
+{
+    printf("=== testcase_long_str\n");
 
     const uint8_t ihex_long0[] = ":020000040800F2\n:108000000804002001810008C582000871810008";
     const uint8_t ihex_long1[] = "71\n:10801000C38200086D8100089583000800000000FD\r\n:1080";
@@ -78,40 +87,137 @@ int main()
 
     if (!ihex_parser(ihex_long0, sizeof(ihex_long0)))
     {
-        printf("Parse error\n");
+        printf("Parse error long0\n");
+        return false;
     }
     if (!ihex_parser(ihex_long1, sizeof(ihex_long1)))
     {
-        printf("Parse error\n");
+        printf("Parse error long1\n");
+        return false;
     }
     if (!ihex_parser(ihex_long2, sizeof(ihex_long2)))
     {
-        printf("Parse error\n");
+        printf("Parse error long2\n");
+        return false;
     }
     if (!ihex_parser(ihex_long3, sizeof(ihex_long3)))
     {
-        printf("Parse error\n");
+        printf("Parse error long3\n");
+        return false;
     }
     if (!ihex_parser(ihex_long4, sizeof(ihex_long4)))
     {
-        printf("Parse error\n");
+        printf("Parse error long4\n");
+        return false;
     }
     if (!ihex_parser(ihex_long5, sizeof(ihex_long5)))
     {
-        printf("Parse error\n");
+        printf("Parse error long5\n");
+        return false;
     }
-    
-    printf("------------------------------------------\n");
+    return true;
+}
+
+bool testcase_segment_address()
+{
+    printf("=== testcase_segment_address\n");
 
     const uint8_t ihex_ex_seg[] = "\n:020000021200EA\n:10246200464C5549442050524F46494C4500464C33\n:1000100018F09FE5805F20B9F0FF1FE518F09FE51D\n:00000001FF";
     if (!ihex_parser(ihex_ex_seg, sizeof(ihex_ex_seg)))
     {
-        printf("Parse error\n");
+        printf("Parse error - segment address\n");
+        return false;
+    }
+    return true;
+}
+
+bool testcase_read_file()
+{
+    printf("=== testcase_read_file\n");
+
+    /* Open HEX file, read per 256 byte block size*/
+    bool return_status = false;
+
+    uint8_t fbuf[256];
+    size_t readcount = 0;
+
+    FILE *fp = fopen("test.hex", "r");
+    if (fp == NULL)
+    {
+        printf("fopen: cannot open hex file\n");
+        goto EXIT;
+    }
+
+    while ((readcount = fread(fbuf, 1, sizeof(fbuf), fp)) > 0)
+    {
+        if (readcount < sizeof(fbuf))
+        {
+            fbuf[readcount - 1] = '\0';     // Add null teminated char
+        }
+        if (!ihex_parser(fbuf, sizeof(fbuf)))
+        {
+            printf("parse failed - HEX file using fread\n");
+            goto EXIT;
+        }
+    }
+
+    return_status = true;
+
+EXIT:
+    if (fp)
+        fclose(fp);
+
+    return return_status;
+}
+
+void print_seperator()
+{
+    printf("------------------------------------------\n");
+}
+
+int main()
+{
+    ihex_set_callback_func(write_flash_data);
+
+    print_seperator();
+
+    if (!testcase_parse_indv_record_type())
+    {
+        printf("Failed at testcase_parse_indv_record_type()\n");
+        return EXIT_FAILURE;
+    }
+
+    print_seperator();
+
+    if (!testcase_long_str())
+    {
+        printf("Failed at testcase_long_str()\n");
+        return EXIT_FAILURE;
     }
     
+    print_seperator();
+
+    if (!testcase_segment_address())
+    {
+        printf("Failed at testcase_segment_address()\n");
+        return EXIT_FAILURE;
+    }
+
+    print_seperator();
+
+    ihex_reset_state();
+    
+    if (!testcase_read_file())
+    {
+        printf("Failed at testcase_read_file()\n");
+        return EXIT_FAILURE;
+    }
+
+    print_seperator();
+
     printf("Done");
 
     //getchar();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

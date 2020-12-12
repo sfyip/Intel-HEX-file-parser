@@ -115,6 +115,14 @@ static void ihex_debug_output()
 }
 #endif
 
+void ihex_reset_state()
+{
+    state = 0;
+    address_lo = 0;
+    address_hi = 0;
+    ex_segment_addr_mode = false;
+}
+
 void ihex_set_callback_func(ihex_callback_fp fp)
 {
     callback_fp = fp;
@@ -272,7 +280,6 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
                     return false;
                 }
             }
-
 
             state = START_CODE_STATE;
             break;
