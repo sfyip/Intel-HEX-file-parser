@@ -152,7 +152,7 @@ bool testcase_read_file()
     {
         if (readcount < sizeof(fbuf))
         {
-            fbuf[readcount - 1] = '\0';     // Add null teminated char
+            fbuf[readcount] = '\0';     // Add null teminated char
         }
         if (!ihex_parser(fbuf, sizeof(fbuf)))
         {
