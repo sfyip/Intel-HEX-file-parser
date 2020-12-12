@@ -1,6 +1,6 @@
 # Intel-HEX-file-parser
 
-This HEX file parser function analyses on a per byte basis each record. State machine based.
+This HEX file parser analyses each byte by using state machine method.
 
 The fields of Intel HEX records includes: <br />
 ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `Start code`
