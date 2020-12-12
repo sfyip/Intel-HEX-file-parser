@@ -18,8 +18,25 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 #include <stdio.h>
 #include "ihex_parser.h"
 
+bool write_flash_data(uint32_t addr, const uint8_t *buf, uint8_t bufsize)
+{
+    uint8_t i;
+
+    printf("[CALLBACK PROG] %08X:", addr);
+    for (i=0; i<bufsize; i++)
+    {
+        printf("%02X", buf[i]);
+    }
+    printf("\n");
+
+    return true;
+}
+
+
 int main()
 {
+    ihex_set_callback_func(write_flash_data);
+
     const uint8_t ihex_d0[] = ":108000000804002001810008C58200087181000871";
     if (!ihex_parser(ihex_d0, sizeof(ihex_d0)))
     {
@@ -52,12 +69,12 @@ int main()
 
     printf("------------------------------------------\n");
 
-    const uint8_t ihex_long0[] = ":020000040800F2:108000000804002001810008C582000871810008";
-    const uint8_t ihex_long1[] = "71:10801000C38200086D8100089583000800000000FD:1080";
-    const uint8_t ihex_long2[] = "2000000000000000000000000000C9820008FD:10803000";
+    const uint8_t ihex_long0[] = ":020000040800F2\n:108000000804002001810008C582000871810008";
+    const uint8_t ihex_long1[] = "71\n:10801000C38200086D8100089583000800000000FD\r\n:1080";
+    const uint8_t ihex_long2[] = "2000000000000000000000000000C9820008FD\n:10803000";
     const uint8_t ihex_long3[] = "6F81000800000000C7820008CB82";
-    const uint8_t ihex_long4[] = "0008A2:108040001B8100081B8100081B8100081B810008";
-    const uint8_t ihex_long5[] = "A0:08847000A683000800A24A04E3:04000005080080ED82:00000001FF";
+    const uint8_t ihex_long4[] = "0008A2\r\n:108040001B8100081B8100081B8100081B810008";
+    const uint8_t ihex_long5[] = "A0\n:08847000A683000800A24A04E3\n:04000005080080ED82\n:00000001FF";
 
     if (!ihex_parser(ihex_long0, sizeof(ihex_long0)))
     {

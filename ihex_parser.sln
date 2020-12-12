@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ihex_parser", "ihex_parser\ihex_parser.vcxproj", "{928E237F-D0AB-4E69-8B43-030C44ED9A69}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{928E237F-D0AB-4E69-8B43-030C44ED9A69}.Debug|x64.ActiveCfg = Debug|x64
+		{928E237F-D0AB-4E69-8B43-030C44ED9A69}.Debug|x64.Build.0 = Debug|x64
+		{928E237F-D0AB-4E69-8B43-030C44ED9A69}.Debug|x86.ActiveCfg = Debug|Win32
+		{928E237F-D0AB-4E69-8B43-030C44ED9A69}.Debug|x86.Build.0 = Debug|Win32
+		{928E237F-D0AB-4E69-8B43-030C44ED9A69}.Release|x64.ActiveCfg = Release|x64
+		{928E237F-D0AB-4E69-8B43-030C44ED9A69}.Release|x64.Build.0 = Release|x64
+		{928E237F-D0AB-4E69-8B43-030C44ED9A69}.Release|x86.ActiveCfg = Release|Win32
+		{928E237F-D0AB-4E69-8B43-030C44ED9A69}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {60BDFC71-5FB9-4A86-8786-BEBB4FB12905}
+	EndGlobalSection
+EndGlobal
