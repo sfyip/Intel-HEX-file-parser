@@ -101,6 +101,10 @@ static void ihex_debug_output()
         printf("Set Extended Segment Address:%08X\n", TRANSFORM_ADDR(address_hi, 0x0000));
         break;
 
+    case 3:         // Start extended segment address
+        printf("Start extended segment address\n");
+        break;
+
     case 4:         //Set linear address
         printf("Set Linear Address:%08X\n", TRANSFORM_ADDR(address_hi, 0x0000));
         break;
@@ -252,6 +256,11 @@ bool ihex_parser(const uint8_t *steambuf, uint32_t size)
             break;
 
         case CHECKSUM_1_STATE:
+            if((byte_count<<1) != data_size_in_nibble)  // Check whether byte count field match the data size 
+            {
+                return false;
+            }
+            
             if (calc_cs != 0x00)
             {
                 return false;
