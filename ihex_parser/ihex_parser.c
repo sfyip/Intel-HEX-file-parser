@@ -40,7 +40,9 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 #define CHECKSUM_1_STATE        11
 
 #define INVALID_HEX_CHAR        'x'
-#define IHEX_DATA_SIZE          32
+
+// The maximum data size in ihex file should be 255, but most of compiler tools use 16/32. 32 should be already enough for general application.
+#define IHEX_DATA_SIZE          255
 
 static uint8_t HexToDec(uint8_t h)
 {
@@ -61,7 +63,7 @@ static uint16_t address_hi;
 static bool ex_segment_addr_mode = false;
 static uint8_t record_type;
 static uint8_t data[IHEX_DATA_SIZE];
-static uint8_t data_size_in_nibble;
+static uint16_t data_size_in_nibble;    // In case IHEX_DATA_SIZE = 255, it should count up to 510
 
 static uint8_t temp_cs;         // save checksum high byte
 static uint8_t calc_cs;         // calculate checksum
